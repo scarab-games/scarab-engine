@@ -15,6 +15,7 @@ piston2d-opengl_graphics = "0.81.0"
 piston2d-shapes = { git = "ssh://git@github.com/rhaaaaawb/shapes.git", branch = "rhawb", features = [
     "serde",
 ] }
+scarab_macros = { path = "../scarab-macros" }
 serde = { version = "1.0", features = ["derive"] }
 thiserror = "1.0"
 uuid = { version = "1.0", features = ["v4", "serde"] }

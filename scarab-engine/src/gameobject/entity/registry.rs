@@ -8,7 +8,10 @@ use crate::{
     error::RenderResult,
     rendering::{registry::TextureRegistry, Camera},
     scene::GameTickArgs,
-    types::HasUuid,
+    types::{
+        physbox::{HasBox, HasBoxMut, PhysBox},
+        HasHealth, HasSolidity, HasUuid,
+    },
     ScarabResult,
 };
 
@@ -16,7 +19,7 @@ use crate::{
 // variants impl HasEntity
 /// A trait for types that can be a registered entity
 /// This is commonly an enum whose variants are tuples containing Entity and some Entity View
-pub trait RegisteredEntity: HasUuid
+pub trait RegisteredEntity
 where
     Self: Sized,
 {
@@ -52,6 +55,50 @@ where
         texture_registry: &TextureRegistry,
         gl: &mut GlGraphics,
     ) -> RenderResult<()>;
+}
+
+impl<E: RegisteredEntity> HasBox for E {
+    fn get_box(&self) -> &PhysBox {
+        self.inner_entity().get_box()
+    }
+}
+
+impl<E: RegisteredEntity> HasBoxMut for E {
+    fn get_box_mut(&mut self) -> &mut PhysBox {
+        self.inner_entity_mut().get_box_mut()
+    }
+}
+
+impl<E: RegisteredEntity> HasEntity for E {
+    fn get_entity(&self) -> &Entity {
+        self.inner_entity()
+    }
+
+    fn get_entity_mut(&mut self) -> &mut Entity {
+        self.inner_entity_mut()
+    }
+}
+
+impl<E: RegisteredEntity> HasHealth for E {
+    fn get_health(&self) -> &crate::types::Health {
+        self.inner_entity().get_health()
+    }
+
+    fn get_health_mut(&mut self) -> &mut crate::types::Health {
+        self.inner_entity_mut().get_health_mut()
+    }
+}
+
+impl<E: RegisteredEntity> HasSolidity for E {
+    fn get_solidity(&self) -> &crate::types::Solidity {
+        &self.inner_entity().solidity
+    }
+}
+
+impl<E: RegisteredEntity> HasUuid for E {
+    fn uuid(&self) -> uuid::Uuid {
+        self.inner_entity().uuid()
+    }
 }
 
 #[cfg(feature = "debug-rendering")]

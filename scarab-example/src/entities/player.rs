@@ -2,20 +2,17 @@ use graphics::types::Color;
 use scarab_engine::{
     gameobject::entity::{
         effect_helpers::{BasicAttack, Cooldown, TryAction},
-        Entity, HasEntity,
+        Entity,
     },
     rendering::{
-        components::progress_bar::{inset_left_to_right, InsetPosition},
+        components::progress_bar::{self, InsetPosition},
         debug::DebugView,
         sprite::AnimationStates,
         Camera,
     },
     scene::GameTickArgs,
-    types::{
-        physbox::{HasBox, PhysBox},
-        HasUuid,
-    },
-    ScarabResult,
+    types::physbox::HasBox,
+    HasBox, HasBoxMut, HasEntity, HasHealth, HasSolidity, HasUuid, ScarabResult,
 };
 use serde::{Deserialize, Serialize};
 use shapes::Point;
@@ -23,8 +20,15 @@ use shapes::Point;
 use super::{EntityDebug, ExampleEntities};
 use crate::debug::DebugOptions;
 
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(
+    Debug, Serialize, Deserialize, HasBox, HasBoxMut, HasEntity, HasHealth, HasSolidity, HasUuid,
+)]
 pub struct Player {
+    #[has_box]
+    #[has_entity]
+    #[has_health]
+    #[has_solidity]
+    #[has_uuid]
     pub entity: Entity,
     // TODO! this needs to be a proper struct a tuple is just horrendous
     attack: (TryAction, BasicAttack, f64),
@@ -52,10 +56,10 @@ impl Player {
         self.attack.0.cooldown.cool(args.dt);
 
         if self.attack.0.should_do(Cooldown::Cooling(self.attack.2)) {
-            let mut target_area = self.entity.get_box().clone();
-            let size = self.entity.get_box().size();
+            let mut target_area = self.get_box().clone();
+            let size = self.get_box().size();
             let _ = target_area.set_size([size.w * 2.0, size.h * 2.0].into());
-            target_area.set_pos(*self.entity.get_box().pos() - Point::from([size.w, size.h]));
+            target_area.set_pos(*self.get_box().pos() - Point::from([size.w, size.h]));
             args.pending_attacks
                 .push(self.attack.1.into_pending_effect(this_idx, target_area));
         }
@@ -65,28 +69,6 @@ impl Player {
 
     pub fn cooldown_fraction(&self) -> f64 {
         f64::from(self.attack.0.cooldown) / self.attack.2
-    }
-}
-
-impl HasEntity for Player {
-    fn get_entity(&self) -> &Entity {
-        &self.entity
-    }
-
-    fn get_entity_mut(&mut self) -> &mut Entity {
-        &mut self.entity
-    }
-}
-
-impl HasUuid for Player {
-    fn uuid(&self) -> uuid::Uuid {
-        self.entity.uuid()
-    }
-}
-
-impl HasBox for Player {
-    fn get_box(&self) -> &PhysBox {
-        self.entity.get_box()
     }
 }
 
@@ -153,12 +135,11 @@ impl DebugView for PlayerDebug {
             gl,
         )?;
 
-        if let Some((transform, rect)) = camera.box_renderables(viewed.get_entity().get_box(), ctx)
-        {
+        if let Some((transform, rect)) = camera.box_renderables(viewed.get_box(), ctx) {
             if debug_options.attack_cooldowns {
                 graphics::rectangle(
                     self.cooldown_color,
-                    inset_left_to_right(
+                    progress_bar::inset_left_to_right(
                         &rect,
                         1.0,
                         0.3,

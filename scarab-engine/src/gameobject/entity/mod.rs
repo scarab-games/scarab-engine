@@ -7,19 +7,16 @@ use piston::RenderArgs;
 use serde::{Deserialize, Serialize};
 use uuid::Uuid;
 
-use super::{
-    field::{Cell, Field},
-    HasHealth, HasSolidity, Health, Solidity, SOLID,
-};
+use super::field::{Cell, Field};
 use crate::{
     error::RenderResult,
     rendering::{registry::TextureRegistry, Camera, View},
     scene::GameTickArgs,
     types::{
-        physbox::{HasBox, HasBoxMut, PhysBox},
-        Velocity,
+        physbox::{HasBox, PhysBox},
+        HasSolidity, Health, Solidity, Velocity, SOLID,
     },
-    PhysicsError, PhysicsResult, ScarabResult,
+    HasBox, HasBoxMut, HasHealth, HasSolidity, HasUuid, PhysicsError, PhysicsResult, ScarabResult,
 };
 
 /// Helper structs for applying basic effects and attacks to entities
@@ -37,14 +34,18 @@ pub trait HasEntity {
     fn get_entity_mut(&mut self) -> &mut Entity;
 }
 
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Serialize, Deserialize, HasBox, HasBoxMut, HasHealth, HasUuid, HasSolidity)]
 /// The basic structure of any non-static object in a game state
 pub struct Entity {
     velocity: Velocity,
     max_velocity: Scalar,
+    #[has_box]
     physbox: PhysBox,
+    #[has_health]
     health: Health,
+    #[has_solidity]
     solidity: Solidity,
+    #[has_uuid]
     uuid: Uuid,
 }
 
@@ -175,31 +176,13 @@ impl Entity {
     }
 }
 
-impl HasBox for Entity {
-    fn get_box(&self) -> &PhysBox {
-        &self.physbox
-    }
-}
-
-impl HasBoxMut for Entity {
-    fn get_box_mut(&mut self) -> &mut PhysBox {
-        &mut self.physbox
-    }
-}
-
-impl HasHealth for Entity {
-    fn get_health(&self) -> &Health {
-        &self.health
+impl HasEntity for Entity {
+    fn get_entity(&self) -> &Entity {
+        self
     }
 
-    fn get_health_mut(&mut self) -> &mut Health {
-        &mut self.health
-    }
-}
-
-impl HasSolidity for Entity {
-    fn get_solidity(&self) -> &Solidity {
-        &self.solidity
+    fn get_entity_mut(&mut self) -> &mut Entity {
+        self
     }
 }
 

@@ -6,29 +6,22 @@ use opengl_graphics::GlGraphics;
 use piston::RenderArgs;
 use scarab_engine::{
     error::RenderResult,
-    gameobject::{
-        entity::{
-            registry::{RegisteredDebugEntity, RegisteredEntity},
-            Entity, HasEntity,
-        },
-        HasHealth,
+    gameobject::entity::{
+        registry::{RegisteredDebugEntity, RegisteredEntity},
+        Entity, HasEntity,
     },
     rendering::{
-        components::progress_bar::{inset_left_to_right, InsetPosition},
+        components::progress_bar::{self, InsetPosition},
         debug::{DebugView, StandardAndDebugView},
         registry::TextureRegistry,
         sprite::{AnimationStateMachine, StaticAnimation},
         Camera, View,
     },
     scene::GameTickArgs,
-    types::{
-        physbox::{HasBox, PhysBox},
-        HasUuid,
-    },
+    types::{physbox::HasBox, HasHealth},
     ScarabResult,
 };
 use serde::{Deserialize, Serialize};
-use uuid::Uuid;
 
 pub use self::{
     enemy::Enemy,
@@ -53,15 +46,6 @@ pub enum ExampleEntities {
             StandardAndDebugView<AnimationStateMachine<StaticAnimation<Enemy>>, EntityDebug<Enemy>>,
         ),
     ),
-}
-
-impl HasBox for ExampleEntities {
-    fn get_box(&self) -> &PhysBox {
-        match self {
-            ExampleEntities::Player((player, _)) => player.get_entity().get_box(),
-            ExampleEntities::Enemy((enemy, _)) => enemy.get_entity().get_box(),
-        }
-    }
 }
 
 impl RegisteredEntity for ExampleEntities {
@@ -158,15 +142,6 @@ impl RegisteredDebugEntity for ExampleEntities {
     }
 }
 
-impl HasUuid for ExampleEntities {
-    fn uuid(&self) -> Uuid {
-        match self {
-            ExampleEntities::Player((player, _view)) => player.uuid(),
-            ExampleEntities::Enemy((enemy, _view)) => enemy.uuid(),
-        }
-    }
-}
-
 #[derive(Derivative, Serialize, Deserialize)]
 #[derivative(Clone, Debug)]
 pub struct EntityDebug<E> {
@@ -188,7 +163,7 @@ impl<E> EntityDebug<E> {
 
 impl<E> DebugView for EntityDebug<E>
 where
-    E: HasEntity,
+    E: HasEntity + HasHealth,
 {
     type Viewed = E;
     type DebugOptions = DebugOptions;
@@ -210,26 +185,13 @@ where
             }
 
             if debug_options.entity_health {
-                // TODO: Writing a helper function for a progress bar would be wonderful
-                let border_size = 1.0;
-                let height_fraction = 0.3;
-
-                let mut health_rect = rect.clone();
-                let max_width = health_rect[2] - 2.0 * border_size;
-                let max_height = health_rect[3] - 2.0 * border_size;
-
-                health_rect[2] = viewed.get_entity().get_health().fraction() * max_width;
-                health_rect[3] = height_fraction * max_height;
-                health_rect[0] += border_size;
-                health_rect[1] += max_height - health_rect[3];
-
                 graphics::rectangle(
                     self.health_color,
-                    inset_left_to_right(
+                    progress_bar::inset_left_to_right(
                         &rect,
                         1.0,
                         0.3,
-                        viewed.get_entity().get_health().fraction(),
+                        viewed.get_health().fraction(),
                         InsetPosition::Inverse(0.0),
                     ),
                     transform,

@@ -3,9 +3,8 @@ use serde::{Deserialize, Serialize};
 
 use super::registry::RegisteredEntity;
 use crate::{
-    gameobject::HasHealth,
     scene::{PendingEffect, TargetsOthers},
-    types::physbox::PhysBox,
+    types::{physbox::PhysBox, HasHealth},
     ScarabResult,
 };
 
@@ -101,10 +100,7 @@ impl BasicAttack {
 
 impl<E: RegisteredEntity> TargetsOthers<E> for BasicAttack {
     fn apply_effect(&mut self, target: &mut E) -> ScarabResult<bool> {
-        target
-            .inner_entity_mut()
-            .get_health_mut()
-            .raw_damage(self.damage);
+        target.get_health_mut().raw_damage(self.damage);
         Ok(false)
     }
 

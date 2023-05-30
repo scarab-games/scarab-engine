@@ -7,7 +7,6 @@ use scarab_engine::{
     gameobject::{
         entity::Entity,
         field::{Cell, CellColorView, Field, FieldColorView},
-        NO_SOLIDITY, SOLID,
     },
     input::{ButtonBinding, LogicalDpad, SingleButton, VirtualDpad},
     rendering::{
@@ -19,7 +18,7 @@ use scarab_engine::{
     scene::Scene,
     types::{
         physbox::{HasBoxMut, PhysBox},
-        Axis,
+        Axis, NO_SOLIDITY, SOLID,
     },
     App, GlutinWindow, LogicalSize, ScarabResult,
 };

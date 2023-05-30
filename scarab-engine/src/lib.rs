@@ -7,7 +7,6 @@
 
 /// The trait for running an app at a high level
 mod app;
-
 /// Common error and result types
 pub mod error;
 /// Game objects
@@ -25,3 +24,5 @@ pub use app::App;
 pub use error::{PhysicsError, PhysicsResult, ScarabError, ScarabResult};
 pub use glutin_window::GlutinWindow;
 pub use winit::dpi::LogicalSize;
+
+pub use scarab_macros::*;

@@ -7,16 +7,16 @@ edition = "2021"
 
 [dependencies]
 derivative = "2.2"
-scarab_engine = { path = "../scarab-engine", features = [
-    "component-rendering",
-    "debug-rendering",
-    "effect-helpers",
-] }
 piston = "0.53.0"
 piston2d-graphics = "0.42.0"
 pistoncore-glutin_window = "0.70.1"
 piston2d-opengl_graphics = "0.81.0"
 piston2d-shapes = { git = "ssh://git@github.com/rhaaaaawb/shapes.git", branch = "rhawb" }
+scarab_engine = { path = "../scarab-engine", features = [
+    "component-rendering",
+    "debug-rendering",
+    "effect-helpers",
+] }
 serde = { version = "1.0", features = ["derive"] }
 rmp-serde = "1.1"
 thiserror = "1.0"

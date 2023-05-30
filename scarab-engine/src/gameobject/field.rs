@@ -8,15 +8,11 @@ use piston::RenderArgs;
 use serde::{Deserialize, Serialize};
 use shapes::Point;
 
-use super::{HasSolidity, Solidity, NO_SOLIDITY, SOLID};
 use crate::{
     error::RenderResult,
     rendering::{registry::TextureRegistry, Camera, View},
-    types::{
-        physbox::{HasBox, HasBoxMut, PhysBox},
-        BoxEdge,
-    },
-    PhysicsError, PhysicsResult,
+    types::{physbox::PhysBox, BoxEdge, Solidity, NO_SOLIDITY, SOLID},
+    HasBox, HasBoxMut, HasSolidity, PhysicsError, PhysicsResult,
 };
 
 /// A graph of `Cell`s on the field, with the edges between them being the
@@ -241,13 +237,15 @@ impl View for FieldColorView {
     }
 }
 
-#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, HasBox, HasBoxMut, HasSolidity)]
 /// Represents a static area on a Field that determines the passability for other standard entities
 pub struct Cell {
     /// This cell's index in the Field's `Vec<Cell>`
     i: NodeIndex<DefaultIx>,
+    #[has_solidity]
     /// Defines how entities can move into/out of this cell
     solidity: Solidity,
+    #[has_box]
     /// The upper left corner and width/height of the cell
     physbox: PhysBox,
 }
@@ -260,24 +258,6 @@ impl Cell {
             solidity,
             physbox,
         }
-    }
-}
-
-impl HasBox for Cell {
-    fn get_box(&self) -> &PhysBox {
-        &self.physbox
-    }
-}
-
-impl HasBoxMut for Cell {
-    fn get_box_mut(&mut self) -> &mut PhysBox {
-        &mut self.physbox
-    }
-}
-
-impl HasSolidity for Cell {
-    fn get_solidity(&self) -> &Solidity {
-        &self.solidity
     }
 }
 
@@ -392,6 +372,8 @@ impl View for CellColorView {
 
 #[cfg(test)]
 mod test {
+    use crate::types::physbox::HasBox;
+
     use super::*;
 
     fn create_test_field() -> (Vec<PhysBox>, Field) {

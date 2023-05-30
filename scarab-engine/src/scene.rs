@@ -9,10 +9,12 @@ use crate::{
     gameobject::{
         entity::registry::{EntityRegistry, RegisteredDebugEntity, RegisteredEntity},
         field::Field,
-        HasSolidity,
     },
     rendering::{debug::DebugView, registry::TextureRegistry, Camera, View},
-    types::physbox::{HasBox, HasBoxMut, PhysBox},
+    types::{
+        physbox::{HasBox, HasBoxMut, PhysBox},
+        HasSolidity,
+    },
     ScarabResult,
 };
 
@@ -137,20 +139,19 @@ where
         // we'll see later how necessary it is to change
         for this_index in 0..self.entity_registry.len() {
             if let Some(this_one) = self.entity_registry.get_one(this_index) {
-                if !this_one.inner_entity().get_solidity().has_solidity() {
+                if !this_one.get_solidity().has_solidity() {
                     continue;
                 }
 
-                let this_one_box = *this_one.inner_entity().get_box();
+                let this_one_box = *this_one.get_box();
 
                 for other_index in 0..this_index {
                     if this_index == other_index {
                         continue;
                     }
                     if let Some(other_one) = self.entity_registry.get_one_mut(other_index) {
-                        if other_one.inner_entity().get_solidity().has_solidity() {
+                        if other_one.get_solidity().has_solidity() {
                             other_one
-                                .inner_entity_mut()
                                 .get_box_mut()
                                 .shift_to_nonoverlapping(&this_one_box);
                         }
@@ -171,7 +172,7 @@ where
                     // TODO! remove inefficient retrieval of overlapping entities
                     // Do not attack if it's the source and the source can't be targeted
                     if effect.source.map_or(true, |s| s.should_apply_effect(i))
-                        && e.inner_entity().get_box().has_overlap(&effect.target_area)
+                        && e.get_box().has_overlap(&effect.target_area)
                     {
                         let res = effect.effect.apply_effect(e).ok();
                         Some(res).flatten()
