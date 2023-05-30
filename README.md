@@ -5,4 +5,4 @@
 
 ## Units
 - **pixel**: This is a normal screen pixel on a computer.
-- **tile**: This is a "pixel-art" pixel. It is the main unit used for all non-rendering purposes 
+- **tile**: This is a "pixel-art" pixel. It is the main unit used for all non-rendering purposes. 
