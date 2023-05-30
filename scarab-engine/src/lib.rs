@@ -7,6 +7,8 @@
 
 /// The trait for running an app at a high level
 mod app;
+/// Controls for entity-entity interactions and effects
+pub mod effect;
 /// Common error and result types
 pub mod error;
 /// Game objects

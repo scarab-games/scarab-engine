@@ -1,12 +1,16 @@
 use graphics::types::Scalar;
 use serde::{Deserialize, Serialize};
 
-use super::registry::RegisteredEntity;
 use crate::{
-    scene::{PendingEffect, TargetsOthers},
-    types::{physbox::PhysBox, HasHealth},
+    gameobject::entity::registry::RegisteredEntity,
+    types::{
+        physbox::{HasBox, PhysBox},
+        HasHealth,
+    },
     ScarabResult,
 };
+
+use super::{Effect, EffectTarget, PendingEffect};
 
 #[derive(Debug, Serialize, Deserialize, Default, Clone, Copy, PartialEq)]
 /// Expresses the readiness of an effect
@@ -92,13 +96,13 @@ impl BasicAttack {
     ) -> PendingEffect<E> {
         PendingEffect {
             source: Some((source_index, false).into()),
-            target_area,
+            target: Box::new(target_area),
             effect: Box::new(*self),
         }
     }
 }
 
-impl<E: RegisteredEntity> TargetsOthers<E> for BasicAttack {
+impl<E: RegisteredEntity> Effect<E> for BasicAttack {
     fn apply_effect(&mut self, target: &mut E) -> ScarabResult<bool> {
         target.get_health_mut().raw_damage(self.damage);
         Ok(false)
@@ -106,6 +110,45 @@ impl<E: RegisteredEntity> TargetsOthers<E> for BasicAttack {
 
     fn update_src(&mut self, _src: &mut E) -> ScarabResult<()> {
         Ok(())
+    }
+}
+
+#[derive(Debug, Default, Serialize, Deserialize)]
+/// A sample effect for targeting a physbox and moving towards its position
+pub struct FollowBox {
+    /// If a target is found, its position
+    pub target: Option<PhysBox>,
+}
+
+impl<E: RegisteredEntity> Effect<E> for FollowBox {
+    fn apply_effect(&mut self, target: &mut E) -> ScarabResult<bool> {
+        self.target = Some(*target.get_box());
+        Ok(false)
+    }
+
+    fn update_src(&mut self, src: &mut E) -> ScarabResult<()> {
+        if let Some(target) = self.target {
+            let velocity = (*target.pos() - *src.get_box().pos()).into();
+            src.inner_entity_mut().set_velocity(velocity);
+        }
+
+        Ok(())
+    }
+}
+
+#[derive(Debug, Default)]
+/// A sample effect targeter for targeting the first player found in the registry
+pub struct TargetFirstPlayer {
+    has_found_player: bool,
+}
+
+impl<E: RegisteredEntity> EffectTarget<E> for TargetFirstPlayer {
+    fn can_target(&mut self, potential_target: &E) -> bool {
+        if !self.has_found_player {
+            potential_target.maybe_player().is_some()
+        } else {
+            false
+        }
     }
 }
 

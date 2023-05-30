@@ -100,9 +100,7 @@ impl RegisteredEntity for ExampleEntities {
     fn game_tick(&mut self, this_idx: usize, args: &mut GameTickArgs<Self>) -> ScarabResult<()> {
         match self {
             ExampleEntities::Player((player, _)) => player.game_tick(this_idx, args),
-            ExampleEntities::Enemy((enemy, _)) => {
-                enemy.entity.game_tick(args).map_err(|e| e.into())
-            }
+            ExampleEntities::Enemy((enemy, _)) => enemy.game_tick(this_idx, args),
         }
     }
 }
