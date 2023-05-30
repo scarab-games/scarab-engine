@@ -1,9 +1,7 @@
 use graphics::types::Color;
 use scarab_engine::{
-    gameobject::entity::{
-        effect_helpers::{BasicAttack, Cooldown, TryAction},
-        Entity,
-    },
+    effect::effect_helpers::{BasicAttack, Cooldown, TryAction},
+    gameobject::entity::Entity,
     rendering::{
         components::progress_bar::{self, InsetPosition},
         debug::DebugView,
@@ -60,7 +58,7 @@ impl Player {
             let size = self.get_box().size();
             let _ = target_area.set_size([size.w * 2.0, size.h * 2.0].into());
             target_area.set_pos(*self.get_box().pos() - Point::from([size.w, size.h]));
-            args.pending_attacks
+            args.pending_effects
                 .push(self.attack.1.into_pending_effect(this_idx, target_area));
         }
 

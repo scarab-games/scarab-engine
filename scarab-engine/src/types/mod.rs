@@ -196,6 +196,15 @@ impl From<Vec2d> for Velocity {
     }
 }
 
+impl From<Point> for Velocity {
+    fn from(value: Point) -> Self {
+        Self {
+            x: value.x,
+            y: value.y,
+        }
+    }
+}
+
 /// A trait for a gameobject that has a unique identifier
 pub trait HasUuid {
     /// The object's unique identifier
